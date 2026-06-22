@@ -1,17 +1,23 @@
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db_session
 from app.core.security import decode_access_token
+from app.core.exceptions import InvalidTokenError
+
 from app.models.user import User
 
 from app.repositories.user import UserRepository
 from app.services.user import UserService
+from app.services.security import AbstractSecurityService, SecurityService
 from app.repositories.pet import AbstractPetRepository, SQLAlchemyPetRepository
 from app.services.pet import PetService
 
 bearer_scheme = HTTPBearer()
+
+def get_security_service() -> AbstractSecurityService:
+    return SecurityService()
 
 async def get_current_user(
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
@@ -21,19 +27,13 @@ async def get_current_user(
     
     user_id = payload.get('sub')
     if user_id is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail='В токене нет пользователя',
-        )
+        raise InvalidTokenError()
         
     repository = UserRepository(session)
     user = await repository.get_by_id(int(user_id))
     
     if user is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail='Пользователь не найден',
-        )
+        raise InvalidTokenError()
 
     return user
 
@@ -44,8 +44,12 @@ def get_user_repository(
 
 def get_user_service(
     repository: UserRepository = Depends(get_user_repository),
+    security_service: AbstractSecurityService = Depends(get_security_service),
 ) -> UserService:
-    return UserService(repository)
+    return UserService(
+        repository=repository,
+        security_service=security_service,
+    )
 
 def get_pet_repository(
     session: AsyncSession = Depends(get_db_session),

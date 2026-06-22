@@ -1,7 +1,7 @@
 from pwdlib import PasswordHash
 from datetime import datetime, timedelta, timezone
 import jwt
-from fastapi import HTTPException, status
+from app.core.exceptions import InvalidTokenError
 
 from app.core.config import settings
 
@@ -37,8 +37,5 @@ def decode_access_token(token: str) -> dict:
         )
         
     except jwt.PyJWTError:
-        raise HTTPException(
-            status_CODE=staticmethod.http_401_UNAUTHORIZED,
-            detail='Не удалось проверить токен',
-        )
+        raise InvalidTokenError()
         

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, status
 
 from app.schemas.user import UserCreate, UserRead, TokenRead, UserLogin
 from app.services.user import UserService
@@ -24,33 +24,16 @@ async def register_user(
     user_data: UserCreate,
     service: UserService = Depends(get_user_service),
 ):
-    try:
-        return await service.register_user(user_data)
-    except EmailAlreadyExistsError:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail='Пользователь с таким email уже существует',
-        )
-    except UsernameAlreadyExistsError:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail='Пользователь с таким username уже существует',
-        )
+    return await service.register_user(user_data)
 
 @router.post('/login', response_model=TokenRead)
 async def login_user(
     login_data: UserLogin,
     service: UserService = Depends(get_user_service),
-): 
-    try:
-        access_token = await service.login_user(login_data)
-    except InvalidCredentialsError:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail='Неверный логин или пароль',
-        )
-    
+):
+    access_token = await service.login_user(login_data)
     return TokenRead(access_token=access_token)
+
 
 @router.get('/me', response_model=UserRead)
 async def get_me(current_user: User = Depends(get_current_user)):

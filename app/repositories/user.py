@@ -1,9 +1,31 @@
+from typing import Protocol
+
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.user import User
 
-class UserRepository:
+class AbstractUserRepository(Protocol):
+    async def get_by_email(self, email: str) -> User | None:
+        ...
+
+    async def get_by_username(self, username: str) -> User | None:
+        ...
+
+    async def create(
+        self,
+        *,
+        email: str,
+        username: str,
+        hashed_password: str,
+    ) -> User:
+        ...
+
+    async def get_by_id(self, user_id: int) -> User | None:
+        ...
+    
+
+class UserRepository(AbstractUserRepository):
     def __init__(self, session: AsyncSession):
         self.session = session
         

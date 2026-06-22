@@ -13,3 +13,6 @@ class InvalidCredentialsError(AppError):
 class PetNotFoundError(AppError):
     pass
 
+class InvalidTokenError(AppError):
+    pass
+

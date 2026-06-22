@@ -1,7 +1,7 @@
 
-from app.repositories.user import UserRepository
+from app.repositories.user import AbstractUserRepository
 from app.schemas.user import UserCreate, UserLogin
-from app.core.security import create_access_token, hash_password, verify_password
+from app.services.security import AbstractSecurityService
 from app.core.exceptions import (
     EmailAlreadyExistsError,
     InvalidCredentialsError,
@@ -10,8 +10,13 @@ from app.core.exceptions import (
 
 
 class UserService:
-    def __init__(self, repository: UserRepository):
+    def __init__(
+        self,
+        repository: AbstractUserRepository,
+        security_service: AbstractSecurityService,
+    ):
         self.repository = repository
+        self.security_service = security_service
         
     async def register_user(self, user_data: UserCreate):
         existing_email_user = await self.repository.get_by_email(user_data.email)
@@ -24,7 +29,7 @@ class UserService:
         if existing_username_user:
             raise UsernameAlreadyExistsError()
             
-        hashed_password = hash_password(user_data.password)
+        hashed_password = self.security_service.hash_password(user_data.password)
         
         user = await self.repository.create(
             email=user_data.email,
@@ -43,8 +48,11 @@ class UserService:
         if user is None:
             raise InvalidCredentialsError()
             
-        if not verify_password(login_data.password, user.hashed_password):
-            raise InvalidCredentialsError
-            
-        return create_access_token(subject=str(user.id))
+        if not self.security_service.verify_password(
+            login_data.password,
+            user.hashed_password,
+        ):
+            raise InvalidCredentialsError()
+
+        return self.security_service.create_access_token(subject=str(user.id))
     

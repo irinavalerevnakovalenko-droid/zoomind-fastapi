@@ -32,7 +32,7 @@ class AbstractPetRepository(Protocol):
     async def delete(self, pet: Pet) -> None:
         ... 
 
-class SQLAlchemyPetRepository:
+class SQLAlchemyPetRepository(AbstractPetRepository):
     def __init__(self, session: AsyncSession):
         self.session = session
         
@@ -45,7 +45,7 @@ class SQLAlchemyPetRepository:
         breed: str,
         age: int,
         weight: Decimal,
-        ) -> Pet:
+    ) -> Pet:
         pet = Pet(
             owner_id=owner_id,
             name=name,
