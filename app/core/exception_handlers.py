@@ -9,13 +9,32 @@ from app.core.exceptions import (
     InvalidTokenError,
 )
 
+def error_response(
+    *,
+    status_code: int,
+    code: str,
+    message: str,
+    details: dict | None = None,
+) -> JSONResponse:
+    return JSONResponse(
+        status_code=status_code,
+        content={
+            'error': {
+                'code': code,
+                'message': message,
+                'details': details or {},
+            }
+        },
+    )
+
 async def email_already_exists_handler(
     request: Request,
     exc: EmailAlreadyExistsError,
 ):
-    return JSONResponse(
+    return error_response(
         status_code=status.HTTP_400_BAD_REQUEST,
-        content={'detail': 'Пользователь с таким email уже существует'},
+        code='EMAIL_ALREADY_EXISTS',
+        message='Пользователь с таким email уже существует',
     )
 
 
@@ -23,9 +42,10 @@ async def username_already_exists_handler(
     request: Request,
     exc: UsernameAlreadyExistsError,
 ):
-    return JSONResponse(
+    return error_response(
         status_code=status.HTTP_400_BAD_REQUEST,
-        content={'detail': 'Пользователь с таким username уже существует'},
+        code='USERNAME_ALREADY_EXISTS',
+        message='Пользователь с таким username уже существует',
     )
 
 
@@ -33,9 +53,10 @@ async def invalid_credentials_handler(
     request: Request,
     exc: InvalidCredentialsError,
 ):
-    return JSONResponse(
+    return error_response(
         status_code=status.HTTP_401_UNAUTHORIZED,
-        content={'detail': 'Неверный логин или пароль'},
+        code='INVALID_CREDENTIALS',
+        message='Неверный логин или пароль',
     )
 
 
@@ -43,14 +64,16 @@ async def invalid_token_handler(
     request: Request,
     exc: InvalidTokenError,
 ):
-    return JSONResponse(
+    return error_response(
         status_code=status.HTTP_401_UNAUTHORIZED,
-        content={'detail': 'Не удалось проверить токен'},
+        code='INVALID_TOKEN',
+        message='Не удалось проверить токен',
     )
 
 async def pet_not_found_handler(request: Request, exc: PetNotFoundError):
-    return JSONResponse(
+    return error_response(
         status_code=status.HTTP_404_NOT_FOUND,
-        content={'detail': 'Питомец не найден'},
+        code='PET_NOT_FOUND',
+        message='Питомец не найден',
     )
     

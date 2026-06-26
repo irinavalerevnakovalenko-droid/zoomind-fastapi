@@ -4,11 +4,7 @@ from app.schemas.user import UserCreate, UserRead, TokenRead, UserLogin
 from app.services.user import UserService
 from app.core.dependencies import get_current_user, get_user_service
 from app.models.user import User
-from app.core.exceptions import (
-    EmailAlreadyExistsError,
-    InvalidCredentialsError,
-    UsernameAlreadyExistsError,
-)
+
 
 router = APIRouter(
     prefix='/auth',

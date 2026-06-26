@@ -1,7 +1,8 @@
 from app.core.exceptions import PetNotFoundError
 from app.repositories.pet import AbstractPetRepository
-from app.schemas.pet import PetCreate, PetUpdate
+from app.schemas.pet import PetCreate, PetUpdate, PetFilter
 from app.models.pet import Pet
+from app.schemas.pagination import Pagination
 
 class PetService:
     def __init__(self, repository: AbstractPetRepository):
@@ -19,8 +20,17 @@ class PetService:
         
         return pet
     
-    async def list_pets(self, owner_id: int) -> list[Pet]:
-        return await self.repository.list_for_owner(owner_id)
+    async def list_pets(
+        self, 
+        owner_id: int,
+        filters: PetFilter,
+        pagination: Pagination,
+        ) -> list[Pet]:
+        return await self.repository.list_for_owner(
+            owner_id=owner_id,
+            filters=filters,
+            pagination=pagination,
+        )
     
     async def get_pet(self, pet_id: int, owner_id: int) -> Pet:
         pet = await self.repository.get_by_id(pet_id, owner_id)

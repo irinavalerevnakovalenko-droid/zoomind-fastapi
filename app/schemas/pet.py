@@ -32,3 +32,10 @@ class PetRead(PetBase):
     owner_id: int
     
     model_config = ConfigDict(from_attributes=True)
+    
+class PetFilter(BaseModel):
+    species: PetSpecies | None = None
+    breed: str | None = None
+    name_contains: str | None = None
+    min_weight: PetWeight | None = None
+    max_weight: PetWeight | None = None

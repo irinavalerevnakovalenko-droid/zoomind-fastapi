@@ -12,7 +12,10 @@ router = APIRouter(
 async def healthz():
     return {'status': 'ok'}
 
-@router.get('/db-check')
-async def db_check(session: AsyncSession = Depends(get_db_session)):
+@router.get('/readyz')
+async def readyz(session: AsyncSession = Depends(get_db_session)):
     result = await session.execute(text('SELECT 1'))
-    return {'database': result.scalar()}
+    return {
+        'status': 'ready',
+        'database': result.scalar(),
+    }

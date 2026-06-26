@@ -32,8 +32,8 @@ app.add_exception_handler(InvalidTokenError, invalid_token_handler)
 app.add_exception_handler(PetNotFoundError, pet_not_found_handler)
 
 app.include_router(health_router)
-app.include_router(auth_router)
-app.include_router(pets_router)
+app.include_router(auth_router, prefix='/api/v1')
+app.include_router(pets_router, prefix='/api/v1')
 
 
 
