@@ -7,6 +7,8 @@ from app.core.exceptions import (
     InvalidCredentialsError,
     PetNotFoundError,
     InvalidTokenError,
+    ProductNotFoundError,
+    ProductSkuAlreadyExistsError,
 )
 
 def error_response(
@@ -75,5 +77,19 @@ async def pet_not_found_handler(request: Request, exc: PetNotFoundError):
         status_code=status.HTTP_404_NOT_FOUND,
         code='PET_NOT_FOUND',
         message='Питомец не найден',
+    )
+    
+async def product_not_found_handler(request: Request, exc: ProductNotFoundError):
+    return error_response(
+        status_code=status.HTTP_404_NOT_FOUND,
+        code='PRODUCT_NOT_FOUND',
+        message='Товар не найден',
+    )
+    
+async def product_sku_already_exists_handler(request: Request, exc: ProductSkuAlreadyExistsError):
+    return error_response(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        code='PRODUCT_SKU_ALREADY_EXISTS',
+        message='Товар с таким артикулом уже существует',
     )
     

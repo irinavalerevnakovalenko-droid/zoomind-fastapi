@@ -16,3 +16,9 @@ class PetNotFoundError(AppError):
 class InvalidTokenError(AppError):
     pass
 
+class ProductNotFoundError(AppError):
+    pass
+
+class ProductSkuAlreadyExistsError(AppError):
+    pass
+

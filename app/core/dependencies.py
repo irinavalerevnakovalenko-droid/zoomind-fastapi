@@ -13,6 +13,8 @@ from app.services.user import UserService
 from app.services.security import AbstractSecurityService, SecurityService
 from app.repositories.pet import AbstractPetRepository, SQLAlchemyPetRepository
 from app.services.pet import PetService
+from app.repositories.product import AbstractProductRepository, SQLAlchemyProductRepository
+from app.services.product import ProductService
 
 bearer_scheme = HTTPBearer()
 
@@ -60,3 +62,13 @@ def get_pet_service(
     repository: AbstractPetRepository = Depends(get_pet_repository),
 ) -> PetService:
     return PetService(repository)
+
+def get_product_repository(
+    session: AsyncSession = Depends(get_db_session),
+) -> AbstractProductRepository:
+    return SQLAlchemyProductRepository(session)
+
+def get_product_service(
+    repository: AbstractProductRepository = Depends(get_product_repository),
+) -> ProductService:
+    return ProductService(repository)
