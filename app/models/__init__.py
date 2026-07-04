@@ -1,7 +1,8 @@
 from app.models.pet import Pet
 from app.models.user import User
-from app.models.enums import PetSpecies, ProductCategory, ProductSpecies
+from app.models.enums import PetSpecies, ProductCategory, ProductSpecies, OrderStatus
 from app.models.product import Product
+from app.models.order import Order, OrderItem
 
 __all__ = (
     'Pet', 
@@ -10,4 +11,7 @@ __all__ = (
     'Product',
     'ProductCategory',
     'ProductSpecies',
+    'Order',
+    'OrderItem',
+    'OrderStatus',
     )

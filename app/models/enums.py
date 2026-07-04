@@ -20,4 +20,12 @@ class ProductSpecies(str, Enum):
     universal = 'universal'
     other = 'other'
     
+class OrderStatus(str, Enum):
+    pending = 'pending'
+    paid = 'paid'
+    shipped = 'shipped'
+    delivered = 'delivered'
+    cancelled = 'cancelled'
+    
+    
     

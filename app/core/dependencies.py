@@ -15,6 +15,8 @@ from app.repositories.pet import AbstractPetRepository, SQLAlchemyPetRepository
 from app.services.pet import PetService
 from app.repositories.product import AbstractProductRepository, SQLAlchemyProductRepository
 from app.services.product import ProductService
+from app.repositories.order import AbstractOrderRepository, SQLAlchemyOrderRepository
+from app.services.order import OrderService
 
 bearer_scheme = HTTPBearer()
 
@@ -72,3 +74,17 @@ def get_product_service(
     repository: AbstractProductRepository = Depends(get_product_repository),
 ) -> ProductService:
     return ProductService(repository)
+
+def get_order_repository(
+    session: AsyncSession = Depends(get_db_session),
+) -> AbstractOrderRepository:
+    return SQLAlchemyOrderRepository(session)
+
+def get_order_service(
+    order_repository: AbstractOrderRepository = Depends(get_order_repository),
+    product_repository: AbstractProductRepository = Depends(get_product_repository),
+) -> OrderService:
+    return OrderService(
+        order_repository=order_repository,
+        product_repository=product_repository,
+    )

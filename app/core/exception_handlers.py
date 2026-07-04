@@ -9,6 +9,8 @@ from app.core.exceptions import (
     InvalidTokenError,
     ProductNotFoundError,
     ProductSkuAlreadyExistsError,
+    OrderNotFoundError,
+    ProductOutOfStockError,
 )
 
 def error_response(
@@ -93,3 +95,16 @@ async def product_sku_already_exists_handler(request: Request, exc: ProductSkuAl
         message='Товар с таким артикулом уже существует',
     )
     
+async def order_not_found_handler(request: Request, exc: OrderNotFoundError):
+    return error_response(
+        status_code=status.HTTP_404_NOT_FOUND,
+        code='ORDER_NOT_FOUND',
+        message='Заказ не найден',
+    )
+    
+async def product_out_of_stock_handler(request: Request, exc: ProductOutOfStockError):
+    return error_response(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        code='PRODUCT_OUT_OF_STOCK',
+        message='Недостаточно товара на складе',
+    )

@@ -22,3 +22,9 @@ class ProductNotFoundError(AppError):
 class ProductSkuAlreadyExistsError(AppError):
     pass
 
+class OrderNotFoundError(AppError):
+    pass
+
+class ProductOutOfStockError(AppError):
+    pass
+

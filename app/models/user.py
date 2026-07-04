@@ -3,6 +3,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 
 from app.core.database import Base
+from app.models.order import Order
 
 class User(Base):
     __tablename__ = 'users'
@@ -15,6 +16,10 @@ class User(Base):
     pets: Mapped[list['Pet']] = relationship(
         back_populates='owner',
         cascade='all, delete-orphan',
+        lazy='selectin',
+    )
+    orders: Mapped[list['Order']] = relationship(
+        back_populates='user',
         lazy='selectin',
     )
     

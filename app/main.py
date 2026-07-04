@@ -10,6 +10,8 @@ from app.core.exceptions import (
     UsernameAlreadyExistsError,
     ProductNotFoundError,
     ProductSkuAlreadyExistsError,
+    OrderNotFoundError,
+    ProductOutOfStockError,
 )
 from app.core.exception_handlers import (
     email_already_exists_handler,
@@ -19,10 +21,13 @@ from app.core.exception_handlers import (
     username_already_exists_handler,
     product_not_found_handler,
     product_sku_already_exists_handler,
+    order_not_found_handler,
+    product_out_of_stock_handler,
 )
 from app.api.auth import router as auth_router
 from app.api.pets import router as pets_router
 from app.api.products import router as products_router
+from app.api.orders import router as orders_router
 
 
 app = FastAPI(
@@ -37,11 +42,14 @@ app.add_exception_handler(InvalidTokenError, invalid_token_handler)
 app.add_exception_handler(PetNotFoundError, pet_not_found_handler)
 app.add_exception_handler(ProductNotFoundError, product_not_found_handler)
 app.add_exception_handler(ProductSkuAlreadyExistsError, product_sku_already_exists_handler)
+app.add_exception_handler(OrderNotFoundError, order_not_found_handler)
+app.add_exception_handler(ProductOutOfStockError, product_out_of_stock_handler)
 
 app.include_router(health_router)
 app.include_router(auth_router, prefix='/api/v1')
 app.include_router(pets_router, prefix='/api/v1')
 app.include_router(products_router, prefix='/api/v1')
+app.include_router(orders_router, prefix='/api/v1')
 
 
 
