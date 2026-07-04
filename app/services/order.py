@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from app.core.exceptions import OrderNotFoundError, ProductNotFoundError, ProductOutOfStockError
 from app.models.order import Order
 from app.repositories.order import AbstractOrderRepository
@@ -16,6 +18,7 @@ class OrderService:
         
     async def create_order(self, user_id: int, order_data: OrderCreate) -> Order:
         items_data = []
+        total_price = Decimal('0')
         for item in order_data.items:
             product = await self.product_repository.get_by_id(item.product_id)
             if product is None:
@@ -23,6 +26,7 @@ class OrderService:
             if product.stock < item.quantity:
                 raise ProductOutOfStockError()
             product.stock -= item.quantity
+            total_price += product.price * item.quantity
             
             items_data.append(
                 {
@@ -35,6 +39,7 @@ class OrderService:
         return await self.order_repository.create(
             user_id=user_id,
             items_data=items_data,
+            total_price=total_price,
         )
         
     async def get_order(

@@ -30,6 +30,7 @@ class OrderRead(BaseModel):
     id: int
     user_id: int
     status: OrderStatus
+    total_price: Decimal
     items: list[OrderItemRead]
     created_at: datetime
     updated_at: datetime

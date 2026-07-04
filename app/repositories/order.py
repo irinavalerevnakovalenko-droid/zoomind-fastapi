@@ -1,4 +1,5 @@
 from typing import Protocol
+from decimal import Decimal
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -13,6 +14,7 @@ class AbstractOrderRepository(Protocol):
         *,
         user_id: int,
         items_data: list[dict],
+        total_price: Decimal,
         ) -> Order:
         ...
         
@@ -47,8 +49,12 @@ class SQLAlchemyOrderRepository:
         *,
         user_id: int,
         items_data: list[dict],
+        total_price: Decimal,
         ) -> Order:
-        order = Order(user_id=user_id)
+        order = Order(
+            user_id=user_id,
+            total_price=total_price,
+        )
         order_items = []
         
         for item_data in items_data:

@@ -17,6 +17,10 @@ class Order(Base):
         SAEnum(OrderStatus), 
         default=OrderStatus.pending,
         )
+    total_price: Mapped[Decimal] = mapped_column(
+        Numeric(10, 2),
+        default=0,
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         server_default=func.now(),
