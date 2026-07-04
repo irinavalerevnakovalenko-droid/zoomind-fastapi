@@ -28,3 +28,6 @@ class OrderNotFoundError(AppError):
 class ProductOutOfStockError(AppError):
     pass
 
+class InvalidOrderStatusTransitionError(AppError):
+    pass
+

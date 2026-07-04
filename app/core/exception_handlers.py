@@ -11,6 +11,7 @@ from app.core.exceptions import (
     ProductSkuAlreadyExistsError,
     OrderNotFoundError,
     ProductOutOfStockError,
+    InvalidOrderStatusTransitionError,
 )
 
 def error_response(
@@ -107,4 +108,14 @@ async def product_out_of_stock_handler(request: Request, exc: ProductOutOfStockE
         status_code=status.HTTP_400_BAD_REQUEST,
         code='PRODUCT_OUT_OF_STOCK',
         message='Недостаточно товара на складе',
+    )
+    
+async def invalid_order_status_transition_handler(
+    request: Request,
+    exc: InvalidOrderStatusTransitionError,
+):
+    return error_response(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        code='INVALID_ORDER_STATUS_TRANSITION',
+        message='Недопустимый переход статуса заказа',
     )

@@ -5,6 +5,7 @@ from typing import Annotated
 from pydantic import BaseModel, Field, ConfigDict
 
 from app.models.enums import OrderStatus
+from app.schemas.product import ProductRead
 
 Quantity = Annotated[int, Field(ge=1)]
 
@@ -23,6 +24,7 @@ class OrderItemRead(BaseModel):
     product_id: int
     quantity: int
     unit_price: Decimal
+    product: ProductRead
 
     model_config = ConfigDict(from_attributes=True)
     

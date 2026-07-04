@@ -12,6 +12,7 @@ from app.core.exceptions import (
     ProductSkuAlreadyExistsError,
     OrderNotFoundError,
     ProductOutOfStockError,
+    InvalidOrderStatusTransitionError,
 )
 from app.core.exception_handlers import (
     email_already_exists_handler,
@@ -23,6 +24,7 @@ from app.core.exception_handlers import (
     product_sku_already_exists_handler,
     order_not_found_handler,
     product_out_of_stock_handler,
+    invalid_order_status_transition_handler,
 )
 from app.api.auth import router as auth_router
 from app.api.pets import router as pets_router
@@ -44,6 +46,10 @@ app.add_exception_handler(ProductNotFoundError, product_not_found_handler)
 app.add_exception_handler(ProductSkuAlreadyExistsError, product_sku_already_exists_handler)
 app.add_exception_handler(OrderNotFoundError, order_not_found_handler)
 app.add_exception_handler(ProductOutOfStockError, product_out_of_stock_handler)
+app.add_exception_handler(
+    InvalidOrderStatusTransitionError,
+    invalid_order_status_transition_handler,
+)
 
 app.include_router(health_router)
 app.include_router(auth_router, prefix='/api/v1')

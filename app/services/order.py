@@ -1,11 +1,20 @@
 from decimal import Decimal
 
-from app.core.exceptions import OrderNotFoundError, ProductNotFoundError, ProductOutOfStockError
+from app.core.exceptions import OrderNotFoundError, ProductNotFoundError, ProductOutOfStockError, InvalidOrderStatusTransitionError
 from app.models.order import Order
 from app.repositories.order import AbstractOrderRepository
 from app.repositories.product import AbstractProductRepository
 from app.schemas.order import OrderCreate, OrderStatusUpdate
 from app.schemas.pagination import Pagination
+from app.models.enums import OrderStatus
+
+ALLOWED_STATUS_TRANSITIONS = {
+    OrderStatus.pending: {OrderStatus.paid, OrderStatus.cancelled},
+    OrderStatus.paid: {OrderStatus.shipped, OrderStatus.cancelled},
+    OrderStatus.shipped: {OrderStatus.delivered},
+    OrderStatus.delivered: set(),
+    OrderStatus.cancelled: set(),
+}
 
 class OrderService:
     def __init__(
@@ -77,6 +86,11 @@ class OrderService:
             order_id=order_id,
             user_id=user_id,
         )
+        allowed_statuses = ALLOWED_STATUS_TRANSITIONS[order.status]
+
+        if status_data.status not in allowed_statuses:
+            raise InvalidOrderStatusTransitionError()
+        
         return await self.order_repository.update_status(
             order=order,
             status=status_data.status,
