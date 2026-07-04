@@ -12,6 +12,7 @@ from app.core.exceptions import (
     OrderNotFoundError,
     ProductOutOfStockError,
     InvalidOrderStatusTransitionError,
+    InactiveUserError,
 )
 
 def error_response(
@@ -118,4 +119,14 @@ async def invalid_order_status_transition_handler(
         status_code=status.HTTP_400_BAD_REQUEST,
         code='INVALID_ORDER_STATUS_TRANSITION',
         message='Недопустимый переход статуса заказа',
+    )
+    
+async def inactive_user_handler(
+    request: Request,
+    exc: InactiveUserError,
+):
+    return error_response(
+        status_code=status.HTTP_403_FORBIDDEN,
+        code='INACTIVE_USER',
+        message='Пользователь неактивен',
     )

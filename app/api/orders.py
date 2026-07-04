@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, status
 
 from app.schemas.pagination import Pagination
-from app.core.dependencies import get_current_user, get_order_service
+from app.core.dependencies import get_current_active_user, get_order_service
 from app.models.user import User
 from app.schemas.order import OrderCreate, OrderRead, OrderStatusUpdate
 from app.services.order import OrderService
@@ -18,7 +18,7 @@ router = APIRouter(
 )
 async def create_order(
     order_data: OrderCreate,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
     service: OrderService = Depends(get_order_service),
 ):
     return await service.create_order(
@@ -33,7 +33,7 @@ async def create_order(
 )
 async def list_orders(
     pagination: Pagination = Depends(),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
     service: OrderService = Depends(get_order_service),
     ):
 
@@ -49,7 +49,7 @@ async def list_orders(
 )
 async def get_order(
     order_id: int,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
     service: OrderService = Depends(get_order_service),
     ):
     
@@ -66,7 +66,7 @@ async def get_order(
 async def update_order_status(
     order_id: int,
     status_data: OrderStatusUpdate,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
     service: OrderService = Depends(get_order_service),
 ):
     return await service.update_order_status(

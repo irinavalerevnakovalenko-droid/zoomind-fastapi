@@ -13,6 +13,7 @@ from app.core.exceptions import (
     OrderNotFoundError,
     ProductOutOfStockError,
     InvalidOrderStatusTransitionError,
+    InactiveUserError,
 )
 from app.core.exception_handlers import (
     email_already_exists_handler,
@@ -25,6 +26,7 @@ from app.core.exception_handlers import (
     order_not_found_handler,
     product_out_of_stock_handler,
     invalid_order_status_transition_handler,
+    inactive_user_handler,
 )
 from app.api.auth import router as auth_router
 from app.api.pets import router as pets_router
@@ -41,6 +43,7 @@ app.add_exception_handler(EmailAlreadyExistsError, email_already_exists_handler)
 app.add_exception_handler(UsernameAlreadyExistsError, username_already_exists_handler)
 app.add_exception_handler(InvalidCredentialsError, invalid_credentials_handler)
 app.add_exception_handler(InvalidTokenError, invalid_token_handler)
+app.add_exception_handler(InactiveUserError, inactive_user_handler)
 app.add_exception_handler(PetNotFoundError, pet_not_found_handler)
 app.add_exception_handler(ProductNotFoundError, product_not_found_handler)
 app.add_exception_handler(ProductSkuAlreadyExistsError, product_sku_already_exists_handler)

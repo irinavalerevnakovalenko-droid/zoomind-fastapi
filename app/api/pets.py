@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, status
 
-from app.core.dependencies import get_current_user, get_pet_service
+from app.core.dependencies import get_current_active_user, get_pet_service
 from app.models.user import User
 from app.schemas.pet import PetCreate, PetRead, PetUpdate, PetFilter
 from app.services.pet import PetService
@@ -17,7 +17,7 @@ router = APIRouter(
 )
 async def create_pet(
     pet_data: PetCreate,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
     service: PetService = Depends(get_pet_service),  
 ):
     return await service.create_pet(
@@ -33,7 +33,7 @@ async def create_pet(
 async def list_pets(
     filters: PetFilter = Depends(),
     pagination: Pagination = Depends(),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
     service: PetService = Depends(get_pet_service),
     ):
 
@@ -50,7 +50,7 @@ async def list_pets(
 )
 async def get_pet(
     pet_id: int,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
     service: PetService = Depends(get_pet_service),
     ):
     
@@ -68,7 +68,7 @@ async def get_pet(
 async def update_pet(
     pet_id: int,
     pet_data: PetUpdate,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
     service: PetService = Depends(get_pet_service),
 ):
     
@@ -84,7 +84,7 @@ async def update_pet(
 )
 async def delete_pet(
     pet_id: int,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
     service: PetService = Depends(get_pet_service),
 ):
     await service.delete_pet(

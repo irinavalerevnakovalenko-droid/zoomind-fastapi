@@ -7,6 +7,9 @@ class EmailAlreadyExistsError(AppError):
 class UsernameAlreadyExistsError(AppError):
     pass
 
+class InactiveUserError(AppError):
+    pass
+
 class InvalidCredentialsError(AppError):
     pass
 
