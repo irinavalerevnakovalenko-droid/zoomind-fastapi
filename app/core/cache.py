@@ -41,3 +41,26 @@ class RedisCacheBackend(CacheBackend):
 
         if keys:
             await self.redis.delete(*keys)
+            
+class InMemoryCacheBackend(CacheBackend):
+    def __init__(self):
+        self.storage: dict[str, Any] = {}
+
+    async def get(self, key: str) -> Any | None:
+        return self.storage.get(key)
+
+    async def set(self, key: str, value: Any, ttl: int) -> None:
+        self.storage[key] = value
+
+    async def delete(self, key: str) -> None:
+        self.storage.pop(key, None)
+
+    async def delete_by_prefix(self, prefix: str) -> None:
+        keys_to_delete = [
+            key
+            for key in self.storage
+            if key.startswith(prefix)
+        ]
+
+        for key in keys_to_delete:
+            self.storage.pop(key, None)
