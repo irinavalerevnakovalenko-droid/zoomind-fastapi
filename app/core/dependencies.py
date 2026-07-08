@@ -1,6 +1,8 @@
 from fastapi import Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.ext.asyncio import AsyncSession
+from redis.asyncio import Redis
+from collections.abc import AsyncGenerator
 
 from app.core.database import get_db_session
 from app.core.security import decode_access_token
@@ -9,6 +11,8 @@ from app.core.exceptions import (
     InactiveUserError, 
     AdminPermissionRequiredError,
 )
+from app.core.config import settings
+from app.core.cache import CacheBackend, RedisCacheBackend
 
 from app.models.user import User
 
@@ -84,6 +88,14 @@ def get_pet_service(
 ) -> PetService:
     return PetService(repository)
 
+async def get_cache() -> AsyncGenerator[CacheBackend, None]:
+    redis = Redis.from_url(settings.redis_url)
+    
+    try:
+        yield RedisCacheBackend(redis)
+    finally:
+        await redis.aclose()
+
 def get_product_repository(
     session: AsyncSession = Depends(get_db_session),
 ) -> AbstractProductRepository:
@@ -91,8 +103,12 @@ def get_product_repository(
 
 def get_product_service(
     repository: AbstractProductRepository = Depends(get_product_repository),
+    cache: CacheBackend = Depends(get_cache),
 ) -> ProductService:
-    return ProductService(repository)
+    return ProductService(
+        repository=repository,
+        cache=cache,
+    )
 
 def get_order_repository(
     session: AsyncSession = Depends(get_db_session),
@@ -107,3 +123,4 @@ def get_order_service(
         order_repository=order_repository,
         product_repository=product_repository,
     )
+    
