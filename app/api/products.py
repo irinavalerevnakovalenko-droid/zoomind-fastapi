@@ -1,9 +1,10 @@
 from fastapi import APIRouter, Depends, status
 
-from app.core.dependencies import get_product_service
+from app.core.dependencies import get_product_service,get_admin_user
 from app.schemas.product import ProductCreate, ProductRead, ProductUpdate, ProductFilter
 from app.services.product import ProductService
 from app.schemas.pagination import Pagination
+from app.models.user import User
 
 router = APIRouter(
     prefix='/products',
@@ -16,6 +17,7 @@ router = APIRouter(
 )
 async def create_product(
     product_data: ProductCreate,
+    admin_user: User = Depends(get_admin_user),
     service: ProductService = Depends(get_product_service),  
 ):
     return await service.create_product(
@@ -60,6 +62,7 @@ async def get_product(
 async def update_product(
     product_id: int,
     product_data: ProductUpdate,
+    admin_user: User = Depends(get_admin_user),
     service: ProductService = Depends(get_product_service),
 ):
     
@@ -74,6 +77,7 @@ async def update_product(
 )
 async def delete_product(
     product_id: int,
+    admin_user: User = Depends(get_admin_user),
     service: ProductService = Depends(get_product_service),
 ):
     await service.delete_product(

@@ -14,6 +14,7 @@ from app.core.exceptions import (
     ProductOutOfStockError,
     InvalidOrderStatusTransitionError,
     InactiveUserError,
+    AdminPermissionRequiredError,
 )
 from app.core.exception_handlers import (
     email_already_exists_handler,
@@ -27,6 +28,7 @@ from app.core.exception_handlers import (
     product_out_of_stock_handler,
     invalid_order_status_transition_handler,
     inactive_user_handler,
+    admin_permission_required_handler,
 )
 from app.api.auth import router as auth_router
 from app.api.pets import router as pets_router
@@ -52,6 +54,10 @@ app.add_exception_handler(ProductOutOfStockError, product_out_of_stock_handler)
 app.add_exception_handler(
     InvalidOrderStatusTransitionError,
     invalid_order_status_transition_handler,
+)
+app.add_exception_handler(
+    AdminPermissionRequiredError,
+    admin_permission_required_handler,
 )
 
 app.include_router(health_router)

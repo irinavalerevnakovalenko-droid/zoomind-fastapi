@@ -34,3 +34,5 @@ class ProductOutOfStockError(AppError):
 class InvalidOrderStatusTransitionError(AppError):
     pass
 
+class AdminPermissionRequiredError(AppError):
+    pass

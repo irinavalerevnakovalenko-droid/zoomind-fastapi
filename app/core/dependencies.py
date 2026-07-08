@@ -4,7 +4,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db_session
 from app.core.security import decode_access_token
-from app.core.exceptions import InvalidTokenError, InactiveUserError
+from app.core.exceptions import (
+    InvalidTokenError, 
+    InactiveUserError, 
+    AdminPermissionRequiredError,
+)
 
 from app.models.user import User
 
@@ -46,8 +50,15 @@ async def get_current_active_user(
 ) -> User:
     if not user.is_active:
         raise InactiveUserError()
-
     return user
+
+async def get_admin_user(
+    user: User = Depends(get_current_active_user),
+) -> User:
+    if not user.is_admin:
+        raise AdminPermissionRequiredError()
+    return user
+
 
 def get_user_repository(
     session: AsyncSession = Depends(get_db_session),

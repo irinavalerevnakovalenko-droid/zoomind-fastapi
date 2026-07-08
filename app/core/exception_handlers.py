@@ -13,6 +13,7 @@ from app.core.exceptions import (
     ProductOutOfStockError,
     InvalidOrderStatusTransitionError,
     InactiveUserError,
+    AdminPermissionRequiredError,
 )
 
 def error_response(
@@ -129,4 +130,14 @@ async def inactive_user_handler(
         status_code=status.HTTP_403_FORBIDDEN,
         code='INACTIVE_USER',
         message='Пользователь неактивен',
+    )
+    
+async def admin_permission_required_handler(
+    request: Request,
+    exc: AdminPermissionRequiredError,
+):
+    return error_response(
+        status_code=status.HTTP_403_FORBIDDEN,
+        code='ADMIN_PERMISSION_REQUIRED',
+        message='Для выполнения нужны права администратора',
     )
