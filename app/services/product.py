@@ -11,6 +11,24 @@ from app.schemas.product import (
     ProductUpdate,
 )
 from app.core.cache import CacheBackend
+from app.core.cache_decorator import cached
+
+def build_catalog_cache_key(*args, **kwargs) -> str:
+    filters = kwargs['filters']
+    pagination = kwargs['pagination']
+    
+    return (
+        'catalog:'
+        f'category={filters.category}:'
+        f'species={filters.species}:'
+        f'name={filters.name_contains}:'
+        f'min_price={filters.min_price}:'
+        f'max_price={filters.max_price}:'
+        f'in_stock={filters.in_stock}:'
+        f'page={pagination.page}:'
+        f'page_size={pagination.page_size}'
+    )
+    
 
 class ProductService:
     def __init__(
@@ -21,22 +39,6 @@ class ProductService:
         self.repository = repository
         self.cache = cache
         
-    def _build_catalog_cache_key(
-        self,
-        filters: ProductFilter,
-        pagination: Pagination,
-    ) -> str:
-        return (
-            'catalog:'
-            f'category={filters.category}:'
-            f'species={filters.species}:'
-            f'name={filters.name_contains}:'
-            f'min_price={filters.min_price}:'
-            f'max_price={filters.max_price}:'
-            f'in_stock={filters.in_stock}:'
-            f'page={pagination.page}:'
-            f'page_size={pagination.page_size}'
-        )
         
     def _product_to_cache_data(self, product: Product) -> dict:
         return {
@@ -65,6 +67,19 @@ class ProductService:
             self._product_to_cache_data(product)
             for product in products
         ]
+        
+    @cached(ttl=300, key_builder=build_catalog_cache_key)
+    async def _cached_list_products(
+        self,
+        *,
+        filters: ProductFilter,
+        pagination: Pagination,
+        cache: CacheBackend | None = None,
+    ) -> list[dict]:
+        return await self._list_products_from_repository(
+            filters=filters,
+            pagination=pagination,
+        )
         
     async def _invalidate_catalog_cache(self) -> None:
         if self.cache is not None:
@@ -95,7 +110,6 @@ class ProductService:
         if product is None:
             raise ProductNotFoundError()
         
-        
         return product
     
     async def list_products(
@@ -103,26 +117,12 @@ class ProductService:
         filters: ProductFilter,
         pagination: Pagination,
     ) -> list[dict]:
-        if self.cache is None:
-            return await self._list_products_from_repository(
-                filters=filters,
-                pagination=pagination,
-            )
-
-        cache_key = self._build_catalog_cache_key(filters, pagination)
-        cached_products = await self.cache.get(cache_key)
-
-        if cached_products is not None:
-            return cached_products
-
-        products = await self._list_products_from_repository(
+        return await self._cached_list_products(
             filters=filters,
             pagination=pagination,
+            cache=self.cache,
         )
 
-        await self.cache.set(cache_key, products, ttl=300)
-        return products
-        
     async def update_product(
         self, 
         product_id: int,
