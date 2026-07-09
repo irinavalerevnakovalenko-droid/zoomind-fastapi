@@ -8,6 +8,7 @@ from app.repositories.product import AbstractProductRepository
 from app.schemas.order import OrderCreate, OrderStatusUpdate
 from app.schemas.pagination import Pagination
 from app.models.enums import OrderStatus
+from app.services.notification import EmailSender
 
 ALLOWED_STATUS_TRANSITIONS = {
     OrderStatus.pending: {OrderStatus.paid, OrderStatus.cancelled},
@@ -22,9 +23,11 @@ class OrderService:
         self,
         order_repository: AbstractOrderRepository,
         product_repository: AbstractProductRepository,
+        email_sender: EmailSender | None = None,
     ):
         self.order_repository = order_repository
         self.product_repository = product_repository
+        self.email_sender = email_sender
         
     async def create_order(self, user_id: int, order_data: OrderCreate) -> Order:
         items_data = []
@@ -110,6 +113,17 @@ class OrderService:
         sent_at = datetime.now(UTC)
         
         for order in orders:
+            if self.email_sender is not None:
+                self.email_sender.send_email(
+                    to_email=order.user.email,
+                    subject='Пора пополнить запасы для питомца',
+                    body=(
+                        f'Здравствуйте, {order.user.username}! '
+                        f'Прошло около 30 дней после доставки заказа #{order.id}. '
+                        'Возможно, пора повторить покупку.'
+                    ),
+                )
+                
             await self.order_repository.mark_reminder_sent(
                 order=order,
                 sent_at=sent_at,

@@ -5,6 +5,7 @@ from app.core.database import async_session_maker, engine
 from app.repositories.order import SQLAlchemyOrderRepository
 from app.repositories.product import SQLAlchemyProductRepository
 from app.services.order import OrderService
+from app.services.notification import ConsoleEmailSender
 
 
 async def _send_repeat_purchase_reminders() -> int:
@@ -16,6 +17,7 @@ async def _send_repeat_purchase_reminders() -> int:
             service = OrderService(
                 order_repository=order_repository,
                 product_repository=product_repository,
+                email_sender=ConsoleEmailSender(),
             )
 
             return await service.send_repeat_purchase_reminders()
