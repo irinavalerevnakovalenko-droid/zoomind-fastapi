@@ -1,5 +1,6 @@
 from typing import Protocol
 from decimal import Decimal
+from datetime import datetime
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -36,6 +37,19 @@ class AbstractOrderRepository(Protocol):
         self,
         order: Order,
         status: OrderStatus,
+    ) -> Order:
+        ...
+        
+    async def list_orders_for_reminder(
+        self,
+        reminder_before: datetime,
+    ) -> list[Order]:
+        ...
+        
+    async def mark_reminder_sent(
+        self,
+        order: Order,
+        sent_at: datetime,
     ) -> Order:
         ...
         
@@ -106,6 +120,32 @@ class SQLAlchemyOrderRepository:
         status: OrderStatus,
     ) -> Order:
         order.status = status
+        
+        await self.session.commit()
+        await self.session.refresh(order)
+        
+        return order
+    
+    async def list_orders_for_reminder(
+        self,
+        reminder_before: datetime,
+    ) -> list[Order]:
+        result = await self.session.execute(
+            select(Order).where(
+                Order.status == OrderStatus.delivered,
+                Order.delivered_at <= reminder_before,
+                Order.reminder_sent_at.is_(None),
+            )
+        )
+        
+        return list(result.scalars().all())
+    
+    async def mark_reminder_sent(
+        self,
+        order: Order,
+        sent_at: datetime,
+    ) -> Order:
+        order.reminder_sent_at = sent_at
         
         await self.session.commit()
         await self.session.refresh(order)

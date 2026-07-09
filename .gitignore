@@ -8,3 +8,5 @@ __pycache__/
 .coverage
 htmlcov/
 alembic/versions/__pycache__/
+celerybeat-schedule
+celerybeat-schedule.*

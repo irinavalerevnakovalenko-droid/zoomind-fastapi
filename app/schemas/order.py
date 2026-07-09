@@ -36,6 +36,8 @@ class OrderRead(BaseModel):
     items: list[OrderItemRead]
     created_at: datetime
     updated_at: datetime
+    delivered_at: datetime | None
+    reminder_sent_at: datetime | None
 
     model_config = ConfigDict(from_attributes=True)
 

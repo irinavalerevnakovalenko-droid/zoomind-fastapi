@@ -1,4 +1,5 @@
 from decimal import Decimal
+from datetime import datetime, UTC, timedelta
 
 from app.core.exceptions import OrderNotFoundError, ProductNotFoundError, ProductOutOfStockError, InvalidOrderStatusTransitionError
 from app.models.order import Order
@@ -90,10 +91,30 @@ class OrderService:
 
         if status_data.status not in allowed_statuses:
             raise InvalidOrderStatusTransitionError()
+        if status_data.status == OrderStatus.delivered and order.delivered_at is None:
+            order.delivered_at = datetime.now(UTC)
         
         return await self.order_repository.update_status(
             order=order,
             status=status_data.status,
         )
+        
+    async def send_repeat_purchase_reminders(self) -> int:
+        reminder_before = datetime.now(UTC) - timedelta(days=30)
+        
+        orders = await self.order_repository.list_orders_for_reminder(
+            reminder_before=reminder_before,
+        )
+        
+        sent_count = 0
+        sent_at = datetime.now(UTC)
+        
+        for order in orders:
+            await self.order_repository.mark_reminder_sent(
+                order=order,
+                sent_at=sent_at,
+            )
+            sent_count += 1
+        return sent_count
         
     
