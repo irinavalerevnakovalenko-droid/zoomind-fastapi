@@ -1,7 +1,12 @@
 from fastapi import APIRouter, Depends, status
 
-from app.core.dependencies import get_current_active_user, get_pet_service
+from app.core.dependencies import (
+    get_current_active_user, 
+    get_pet_service, 
+    get_pet_for_owner,
+)
 from app.models.user import User
+from app.models.pet import Pet
 from app.schemas.pet import PetCreate, PetRead, PetUpdate, PetFilter
 from app.services.pet import PetService
 from app.schemas.pagination import Pagination
@@ -49,15 +54,9 @@ async def list_pets(
     status_code=status.HTTP_200_OK,
 )
 async def get_pet(
-    pet_id: int,
-    current_user: User = Depends(get_current_active_user),
-    service: PetService = Depends(get_pet_service),
-    ):
-    
-    return await service.get_pet(
-        pet_id=pet_id,
-        owner_id=current_user.id,
-    )
+    pet: Pet = Depends(get_pet_for_owner),
+):
+    return pet
     
     
 @router.patch(
@@ -66,15 +65,14 @@ async def get_pet(
     status_code=status.HTTP_200_OK,
 ) 
 async def update_pet(
-    pet_id: int,
     pet_data: PetUpdate,
-    current_user: User = Depends(get_current_active_user),
+    pet: Pet = Depends(get_pet_for_owner),
     service: PetService = Depends(get_pet_service),
 ):
     
     return await service.update_pet(
-        pet_id=pet_id,
-        owner_id=current_user.id,
+        pet_id=pet.id,
+        owner_id=pet.owner_id,
         pet_data=pet_data,
     )
     
@@ -83,12 +81,11 @@ async def update_pet(
     status_code=status.HTTP_204_NO_CONTENT,
 )
 async def delete_pet(
-    pet_id: int,
-    current_user: User = Depends(get_current_active_user),
+    pet: Pet = Depends(get_pet_for_owner),
     service: PetService = Depends(get_pet_service),
 ):
     await service.delete_pet(
-        pet_id=pet_id,
-        owner_id=current_user.id,
+        pet_id=pet.id,
+        owner_id=pet.owner_id,
     )
     

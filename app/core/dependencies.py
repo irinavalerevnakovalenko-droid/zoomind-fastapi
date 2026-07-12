@@ -15,6 +15,7 @@ from app.core.config import settings
 from app.core.cache import CacheBackend, RedisCacheBackend
 
 from app.models.user import User
+from app.models.pet import Pet
 
 from app.repositories.user import UserRepository
 from app.services.user import UserService
@@ -95,6 +96,16 @@ async def get_cache() -> AsyncGenerator[CacheBackend, None]:
         yield RedisCacheBackend(redis)
     finally:
         await redis.aclose()
+        
+async def get_pet_for_owner(
+    pet_id: int,
+    current_user: User = Depends(get_current_active_user),
+    service: PetService = Depends(get_pet_service),
+) -> Pet:
+    return await service.get_pet(
+        pet_id=pet_id,
+        owner_id=current_user.id,
+    )
 
 def get_product_repository(
     session: AsyncSession = Depends(get_db_session),
