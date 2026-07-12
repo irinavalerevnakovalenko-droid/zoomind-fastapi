@@ -10,6 +10,7 @@ from app.core.exceptions import (
     InvalidTokenError, 
     InactiveUserError, 
     AdminPermissionRequiredError,
+    TooManyRequestsError,
 )
 from app.core.config import settings
 from app.core.cache import CacheBackend, RedisCacheBackend
@@ -94,6 +95,23 @@ async def get_cache() -> AsyncGenerator[CacheBackend, None]:
     
     try:
         yield RedisCacheBackend(redis)
+    finally:
+        await redis.aclose()
+        
+async def throttle_user(
+    current_user: User = Depends(get_current_active_user),
+) -> None:
+    redis = Redis.from_url(settings.redis_url)
+    key = f'rate_limit:user:{current_user.id}'
+
+    try:
+        requests_count = await redis.incr(key)
+
+        if requests_count == 1:
+            await redis.expire(key, settings.rate_limit_window_seconds)
+
+        if requests_count > settings.rate_limit_requests:
+            raise TooManyRequestsError()
     finally:
         await redis.aclose()
         

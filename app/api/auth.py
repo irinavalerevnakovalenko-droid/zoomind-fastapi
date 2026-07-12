@@ -2,7 +2,11 @@ from fastapi import APIRouter, Depends, status
 
 from app.schemas.user import UserCreate, UserRead, TokenRead, UserLogin
 from app.services.user import UserService
-from app.core.dependencies import get_current_active_user, get_user_service
+from app.core.dependencies import (
+    get_current_active_user, 
+    get_user_service,
+    throttle_user,
+)
 from app.models.user import User
 
 
@@ -32,6 +36,8 @@ async def login_user(
 
 
 @router.get('/me', response_model=UserRead)
-async def get_me(current_user: User = Depends(get_current_active_user)):
+async def get_me(
+    current_user: User = Depends(get_current_active_user),
+    _: None = Depends(throttle_user),
+):
     return current_user
-

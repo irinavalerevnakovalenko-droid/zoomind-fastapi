@@ -15,7 +15,9 @@ from app.core.exceptions import (
     InvalidOrderStatusTransitionError,
     InactiveUserError,
     AdminPermissionRequiredError,
+    TooManyRequestsError,
 )
+
 from app.core.exception_handlers import (
     email_already_exists_handler,
     invalid_credentials_handler,
@@ -29,7 +31,9 @@ from app.core.exception_handlers import (
     invalid_order_status_transition_handler,
     inactive_user_handler,
     admin_permission_required_handler,
+    too_many_requests_handler,
 )
+
 from app.api.auth import router as auth_router
 from app.api.pets import router as pets_router
 from app.api.products import router as products_router
@@ -59,6 +63,7 @@ app.add_exception_handler(
     AdminPermissionRequiredError,
     admin_permission_required_handler,
 )
+app.add_exception_handler(TooManyRequestsError, too_many_requests_handler)
 
 app.include_router(health_router)
 app.include_router(auth_router, prefix='/api/v1')

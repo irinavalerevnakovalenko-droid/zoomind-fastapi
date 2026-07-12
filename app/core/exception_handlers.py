@@ -14,6 +14,7 @@ from app.core.exceptions import (
     InvalidOrderStatusTransitionError,
     InactiveUserError,
     AdminPermissionRequiredError,
+    TooManyRequestsError,
 )
 
 def error_response(
@@ -140,4 +141,14 @@ async def admin_permission_required_handler(
         status_code=status.HTTP_403_FORBIDDEN,
         code='ADMIN_PERMISSION_REQUIRED',
         message='Для выполнения нужны права администратора',
+    )
+    
+async def too_many_requests_handler(
+    request: Request,
+    exc: TooManyRequestsError,
+):
+    return error_response(
+        status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+        code='RATE_LIMIT_EXCEEDED',
+        message='Слишком много запросов. Попробуйте позже',
     )

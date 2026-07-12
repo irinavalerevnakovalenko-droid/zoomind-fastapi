@@ -4,6 +4,7 @@ from app.core.dependencies import (
     get_current_active_user, 
     get_pet_service, 
     get_pet_for_owner,
+    throttle_user,
 )
 from app.models.user import User
 from app.models.pet import Pet
@@ -14,6 +15,7 @@ from app.schemas.pagination import Pagination
 router = APIRouter(
     prefix='/pets',
     tags=['pets'],
+    dependencies=[Depends(throttle_user)],
 )
 @router.post(
     '/',

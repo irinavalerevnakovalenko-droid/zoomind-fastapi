@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, status
 
 from app.schemas.pagination import Pagination
-from app.core.dependencies import get_current_active_user, get_order_service
+from app.core.dependencies import get_current_active_user, get_order_service, throttle_user
 from app.models.user import User
 from app.schemas.order import OrderCreate, OrderRead, OrderStatusUpdate
 from app.services.order import OrderService
@@ -9,6 +9,7 @@ from app.services.order import OrderService
 router = APIRouter(
     prefix='/orders',
     tags=['orders'],
+    dependencies=[Depends(throttle_user)],
 )
 
 @router.post(

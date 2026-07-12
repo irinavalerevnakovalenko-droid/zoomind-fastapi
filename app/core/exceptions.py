@@ -36,3 +36,6 @@ class InvalidOrderStatusTransitionError(AppError):
 
 class AdminPermissionRequiredError(AppError):
     pass
+
+class TooManyRequestsError(AppError):
+    pass
