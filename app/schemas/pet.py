@@ -2,7 +2,7 @@ from decimal import Decimal
 from typing import Annotated
 from datetime import date
 
-from pydantic import BaseModel, Field, ConfigDict, computed_field, field_validator
+from pydantic import BaseModel, Field, ConfigDict, computed_field, model_validator
 
 from app.models.enums import PetSpecies
 
@@ -18,12 +18,11 @@ class PetBase(BaseModel):
     birth_date: PetBirthDate
     weight: PetWeight
     
-    @field_validator('birth_date')
-    @classmethod
-    def validate_birth_date(cls, value: date) -> date:
-        if value > date.today():
+    @model_validator(mode='after')
+    def validate_birth_date(self) -> 'PetBase':
+        if self.birth_date > date.today():
             raise ValueError('Дата рождения не может быть больше текущей даты')
-        return value
+        return self
 
 class PetCreate(PetBase):
     pass
@@ -35,12 +34,11 @@ class PetUpdate(BaseModel):
     birth_date: PetBirthDate | None = None
     weight: PetWeight | None = None
     
-    @field_validator('birth_date')
-    @classmethod
-    def validate_birth_date(cls, value: date | None) -> date | None:
-        if value is not None and value > date.today():
+    @model_validator(mode='after')
+    def validate_birth_date(self) -> 'PetUpdate':
+        if self.birth_date is not None and self.birth_date > date.today():
             raise ValueError('Дата рождения не может быть больше текущей даты')
-        return value
+        return self
     
 class PetRead(PetBase):
     id: int
