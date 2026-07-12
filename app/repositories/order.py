@@ -4,6 +4,7 @@ from datetime import datetime
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from app.models.enums import OrderStatus
 from app.models.order import Order, OrderItem
@@ -93,9 +94,13 @@ class SQLAlchemyOrderRepository:
         ) -> Order | None:
         
         result = await self.session.execute(
-            select(Order).where(
+            select(Order)
+            .options(
+                selectinload(Order.items).selectinload(OrderItem.product),
+            )
+            .where(
                 Order.id == order_id,
-                Order.user_id == user_id,    
+                Order.user_id == user_id,
             )
         )
         return result.scalar_one_or_none()
@@ -105,8 +110,12 @@ class SQLAlchemyOrderRepository:
         user_id: int, 
         pagination: Pagination,
         ) -> list[Order]:
-        query = select(Order).where(
-            Order.user_id == user_id,
+        query = (
+            select(Order)
+            .options(
+                selectinload(Order.items).selectinload(OrderItem.product),
+            )
+            .where(Order.user_id == user_id)
         )
 
         query = query.limit(pagination.page_size).offset(pagination.offset)
@@ -131,7 +140,11 @@ class SQLAlchemyOrderRepository:
         reminder_before: datetime,
     ) -> list[Order]:
         result = await self.session.execute(
-            select(Order).where(
+            select(Order)
+            .options(
+                selectinload(Order.user),
+            )
+            .where(
                 Order.status == OrderStatus.delivered,
                 Order.delivered_at <= reminder_before,
                 Order.reminder_sent_at.is_(None),
