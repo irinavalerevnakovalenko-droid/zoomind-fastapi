@@ -1,7 +1,7 @@
 from decimal import Decimal
 from datetime import datetime
 
-from sqlalchemy import ForeignKey, Numeric, DateTime, func
+from sqlalchemy import ForeignKey, Numeric, DateTime, func, Index
 from sqlalchemy import Enum as SAEnum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -10,6 +10,9 @@ from app.models.enums import OrderStatus
 
 class Order(Base):
     __tablename__ = 'orders'
+    __table_args__ = (
+        Index('ix_order_user_status', 'user_id', 'status'),
+    )
     
     id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey('users.id'), index=True)
