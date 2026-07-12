@@ -1,5 +1,6 @@
 from decimal import Decimal
 from typing import Protocol
+from datetime import date
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -17,7 +18,7 @@ class AbstractPetRepository(Protocol):
         name: str,
         species: PetSpecies,
         breed: str,
-        age: int,
+        birth_date: date,
         weight: Decimal,
     ) -> Pet:
         ...
@@ -50,7 +51,7 @@ class SQLAlchemyPetRepository(AbstractPetRepository):
         name: str,
         species: PetSpecies,
         breed: str,
-        age: int,
+        birth_date: date,
         weight: Decimal,
     ) -> Pet:
         pet = Pet(
@@ -58,7 +59,7 @@ class SQLAlchemyPetRepository(AbstractPetRepository):
             name=name,
             species=species,
             breed=breed,
-            age=age,
+            birth_date=birth_date,
             weight=weight,    
         )
         

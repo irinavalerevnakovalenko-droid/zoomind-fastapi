@@ -14,7 +14,7 @@ class PetService:
             name=pet_data.name,
             species=pet_data.species,
             breed=pet_data.breed,
-            age=pet_data.age,
+            birth_date=pet_data.birth_date,
             weight=pet_data.weight,   
         )
         

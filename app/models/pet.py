@@ -1,4 +1,5 @@
 from decimal import Decimal
+from datetime import date
 
 from sqlalchemy import ForeignKey, Numeric, String
 from sqlalchemy import Enum as SAEnum
@@ -15,7 +16,7 @@ class Pet(Base):
     name: Mapped[str] = mapped_column(String(100), index=True)
     species: Mapped[PetSpecies] = mapped_column(SAEnum(PetSpecies))
     breed: Mapped[str] = mapped_column(String(50))
-    age: Mapped[int]
+    birth_date: Mapped[date] = mapped_column()
     weight: Mapped[Decimal] = mapped_column(Numeric(5, 2))
     owner: Mapped['User'] = relationship(
         back_populates='pets', 
