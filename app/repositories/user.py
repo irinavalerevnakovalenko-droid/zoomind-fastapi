@@ -18,6 +18,9 @@ class AbstractUserRepository(Protocol):
         email: str,
         username: str,
         hashed_password: str,
+        phone: str,
+        delivery_address: str,
+        is_newsletter_enabled: bool,
     ) -> User:
         ...
 
@@ -47,11 +50,17 @@ class UserRepository(AbstractUserRepository):
         email: str,
         username: str,
         hashed_password: str,
+        phone: str,
+        delivery_address: str,
+        is_newsletter_enabled: bool,
     ) -> User:
         user = User(
             email=email,
             username=username,
             hashed_password=hashed_password,
+            phone=phone,
+            delivery_address=delivery_address,
+            is_newsletter_enabled=is_newsletter_enabled,
         )
         
         self.session.add(user)

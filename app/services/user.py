@@ -35,6 +35,9 @@ class UserService:
             email=user_data.email,
             username=user_data.username,
             hashed_password=hashed_password,
+            phone=user_data.phone,
+            delivery_address=user_data.delivery_address,
+            is_newsletter_enabled=user_data.is_newsletter_enabled,
         )
         
         return user
