@@ -26,6 +26,9 @@ class AbstractUserRepository(Protocol):
 
     async def get_by_id(self, user_id: int) -> User | None:
         ...
+        
+    async def update(self, user: User, data: dict) -> User:
+        ...
     
 
 class UserRepository(AbstractUserRepository):
@@ -75,5 +78,13 @@ class UserRepository(AbstractUserRepository):
         )
         return result.scalar_one_or_none()
     
+    async def update(self, user: User, data: dict) -> User:
+        for field, value in data.items():
+            setattr(user, field, value)
+    
+        await self.session.commit()
+        await self.session.refresh(user)
+
+        return user
     
     

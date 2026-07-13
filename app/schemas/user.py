@@ -29,6 +29,11 @@ class UserRead(UserBase):
     
     model_config = ConfigDict(from_attributes=True)
     
+class UserUpdate(BaseModel):
+    phone: Phone | None = None
+    delivery_address: DeliveryAddress | None = None
+    is_newsletter_enabled: bool | None = None
+    
     
 class TokenRead(BaseModel):
     access_token: str

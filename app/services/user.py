@@ -1,12 +1,13 @@
 
 from app.repositories.user import AbstractUserRepository
-from app.schemas.user import UserCreate, UserLogin
+from app.schemas.user import UserCreate, UserLogin, UserUpdate
 from app.services.security import AbstractSecurityService
 from app.core.exceptions import (
     EmailAlreadyExistsError,
     InvalidCredentialsError,
     UsernameAlreadyExistsError,
 ) 
+from app.models.user import User
 
 
 class UserService:
@@ -59,3 +60,10 @@ class UserService:
 
         return self.security_service.create_access_token(subject=str(user.id))
     
+    async def update_profile(
+        self,
+        user: User,
+        user_data: UserUpdate,
+        ) -> User:
+        data = user_data.model_dump(exclude_unset=True)
+        return await self.repository.update(user, data)
