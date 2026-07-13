@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from pydantic import BaseModel,ConfigDict, EmailStr, Field
+from pydantic import BaseModel,ConfigDict, EmailStr, Field, model_validator
 
 Username = Annotated[str, Field(min_length=3, max_length=150)]
 Password = Annotated[str, Field(min_length=8, max_length=128)]
@@ -10,12 +10,11 @@ DeliveryAddress = Annotated[str, Field(max_length=255)]
 class UserBase(BaseModel):
     email: EmailStr
     username: Username
-    phone: Phone | None = None
+    phone: Phone
     delivery_address: DeliveryAddress = ''
     is_newsletter_enabled: bool = False
 
 class UserCreate(UserBase):
-    phone: Phone
     password: Password
     
 class UserLogin(BaseModel):
@@ -33,6 +32,12 @@ class UserUpdate(BaseModel):
     phone: Phone | None = None
     delivery_address: DeliveryAddress | None = None
     is_newsletter_enabled: bool | None = None
+    
+    @model_validator(mode='after')
+    def validate_phone(self) -> 'UserUpdate':
+        if 'phone' in self.model_fields_set and self.phone is None:
+            raise ValueError('Поле обязательно для заполнения')
+        return self
     
     
 class TokenRead(BaseModel):

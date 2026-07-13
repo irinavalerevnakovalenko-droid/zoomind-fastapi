@@ -14,7 +14,7 @@ class User(Base):
     hashed_password: Mapped[str] = mapped_column(String(255))
     is_active: Mapped[bool] = mapped_column(default=True)
     is_admin: Mapped[bool] = mapped_column(default=False)
-    phone: Mapped[str | None] = mapped_column(String(30), nullable=True)
+    phone: Mapped[str] = mapped_column(String(30), nullable=False)
     delivery_address: Mapped[str] = mapped_column(String(255), default='')
     is_newsletter_enabled: Mapped[bool] = mapped_column(default=False)
     pets: Mapped[list['Pet']] = relationship(
