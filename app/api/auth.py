@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, status
+from fastapi import Response, Request
 
 from app.schemas.user import UserCreate, UserRead, TokenRead, UserLogin, UserUpdate
 from app.services.user import UserService
@@ -7,7 +8,9 @@ from app.core.dependencies import (
     get_user_service,
     throttle_user,
 )
+from app.core.config import settings
 from app.models.user import User
+from app.core.exceptions import InvalidTokenError
 
 
 router = APIRouter(
@@ -29,10 +32,21 @@ async def register_user(
 @router.post('/login', response_model=TokenRead)
 async def login_user(
     login_data: UserLogin,
+    response: Response,
     service: UserService = Depends(get_user_service),
 ):
-    access_token = await service.login_user(login_data)
-    return TokenRead(access_token=access_token)
+    access_token, refresh_token = await service.login_user(login_data)
+    response.set_cookie(
+        key='refresh_token',
+        value=refresh_token,
+        httponly=True,
+        samesite='lax',
+        secure=not settings.debug,
+        max_age=settings.refresh_token_expire_days * 24 * 60 * 60,
+        path='/api/v1/auth',
+    )
+
+    return TokenRead(access_token=access_token) 
 
 
 @router.get('/me', response_model=UserRead)
@@ -57,3 +71,53 @@ async def update_me(
         user=current_user,
         user_data=user_data,
     )
+    
+@router.post('/refresh', response_model=TokenRead)
+async def refresh_access_token(
+    request: Request,
+    response: Response,
+    service: UserService = Depends(get_user_service),
+):
+    refresh_token = request.cookies.get('refresh_token')
+    
+    if refresh_token is None:
+        raise InvalidTokenError()
+    
+    access_token, new_refresh_token = await service.refresh_tokens(
+        refresh_token,
+    )
+    
+    response.set_cookie(
+        key='refresh_token',
+        value=new_refresh_token,
+        httponly=True,
+        samesite='lax',
+        secure=not settings.debug,
+        max_age=settings.refresh_token_expire_days * 24 * 60 * 60,
+        path='/api/v1/auth',
+    )
+
+    return TokenRead(access_token=access_token)
+
+@router.post(
+    '/logout',
+    status_code=status.HTTP_204_NO_CONTENT,
+)
+async def logout(
+    request: Request,
+    response: Response,
+    service: UserService = Depends(get_user_service),
+):
+    refresh_token = request.cookies.get('refresh_token')
+
+    if refresh_token is not None:
+        await service.logout(refresh_token)
+
+    response.delete_cookie(
+        key='refresh_token',
+        path='/api/v1/auth',
+        httponly=True,
+        samesite='lax',
+        secure=not settings.debug,
+    )
+

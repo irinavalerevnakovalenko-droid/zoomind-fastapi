@@ -4,6 +4,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
 from app.models.order import Order
+from app.models.refresh_token import RefreshToken
 
 class User(Base):
     __tablename__ = 'users'
@@ -24,6 +25,11 @@ class User(Base):
     )
     orders: Mapped[list['Order']] = relationship(
         back_populates='user',
+        lazy='selectin',
+    )
+    refresh_tokens: Mapped[list['RefreshToken']] = relationship(
+        back_populates='user',
+        cascade='all, delete-orphan',
         lazy='selectin',
     )
     

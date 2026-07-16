@@ -15,6 +15,7 @@ from app.core.exceptions import (
 from app.core.config import settings
 from app.core.cache import CacheBackend, RedisCacheBackend
 
+
 from app.models.user import User
 from app.models.pet import Pet
 
@@ -27,6 +28,7 @@ from app.repositories.product import AbstractProductRepository, SQLAlchemyProduc
 from app.services.product import ProductService
 from app.repositories.order import AbstractOrderRepository, SQLAlchemyOrderRepository
 from app.services.order import OrderService
+from app.repositories.refresh_token import AbstractRefreshTokenRepository, SQLAlchemyRefreshTokenRepository
 
 bearer_scheme = HTTPBearer()
 
@@ -65,6 +67,10 @@ async def get_admin_user(
         raise AdminPermissionRequiredError()
     return user
 
+def get_refresh_token_repository(
+    session: AsyncSession = Depends(get_db_session),
+) -> AbstractRefreshTokenRepository:
+    return SQLAlchemyRefreshTokenRepository(session)
 
 def get_user_repository(
     session: AsyncSession = Depends(get_db_session),
@@ -74,10 +80,12 @@ def get_user_repository(
 def get_user_service(
     repository: UserRepository = Depends(get_user_repository),
     security_service: AbstractSecurityService = Depends(get_security_service),
+    refresh_token_repository: AbstractRefreshTokenRepository = Depends(get_refresh_token_repository),
 ) -> UserService:
     return UserService(
         repository=repository,
         security_service=security_service,
+        refresh_token_repository=refresh_token_repository,
     )
 
 def get_pet_repository(
@@ -152,4 +160,6 @@ def get_order_service(
         order_repository=order_repository,
         product_repository=product_repository,
     )
+    
+
     
