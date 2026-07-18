@@ -1,5 +1,14 @@
 from fastapi import FastAPI
 
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
+from starlette.middleware.trustedhost import TrustedHostMiddleware
+
+from contextlib import asynccontextmanager
+
+from redis.asyncio import Redis
+from sqlalchemy import text
+
 from app.api.health import router as health_router
 from app.core.config import settings
 from app.core.exceptions import (
@@ -33,16 +42,53 @@ from app.core.exception_handlers import (
     admin_permission_required_handler,
     too_many_requests_handler,
 )
+from app.core.database import engine
 
 from app.api.auth import router as auth_router
 from app.api.pets import router as pets_router
 from app.api.products import router as products_router
 from app.api.orders import router as orders_router
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    redis = Redis.from_url(settings.redis_url)
+    
+    try:
+        await redis.ping()
+        
+        async with engine.connect() as connection:
+            await connection.execute(text('SELECT 1'))
+            
+        app.state.redis = redis
+        
+        yield
+    finally:
+        await redis.aclose()
+        await engine.dispose()
+        
 
 app = FastAPI(
     title=settings.app_name,
     version='1.0.0',
+    lifespan=lifespan,
+)
+
+app.add_middleware(
+    GZipMiddleware,
+    minimum_size=500,
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.cors_origins,
+    allow_credentials=True,
+    allow_methods=['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
+    allow_headers=['Authorization', 'Content-Type'],
+)
+
+app.add_middleware(
+    TrustedHostMiddleware,
+    allowed_hosts=settings.trusted_hosts,
 )
 
 app.add_exception_handler(EmailAlreadyExistsError, email_already_exists_handler)

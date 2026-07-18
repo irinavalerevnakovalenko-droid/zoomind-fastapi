@@ -19,5 +19,15 @@ class Settings(BaseSettings):
         env_file='.env',
         env_file_encoding='utf-8',
     )
+    cors_origins: list[str] = [
+        'http://localhost:3000',
+        'http://127.0.0.1:3000',
+    ]
+    trusted_hosts: list[str] = [
+        'localhost',
+        '127.0.0.1',
+    ]
     
 settings = Settings()
+    
+    

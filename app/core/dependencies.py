@@ -1,8 +1,6 @@
-from fastapi import Depends
+from fastapi import Depends, Request
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.ext.asyncio import AsyncSession
-from redis.asyncio import Redis
-from collections.abc import AsyncGenerator
 
 from app.core.database import get_db_session
 from app.core.security import decode_access_token
@@ -98,30 +96,23 @@ def get_pet_service(
 ) -> PetService:
     return PetService(repository)
 
-async def get_cache() -> AsyncGenerator[CacheBackend, None]:
-    redis = Redis.from_url(settings.redis_url)
-    
-    try:
-        yield RedisCacheBackend(redis)
-    finally:
-        await redis.aclose()
+def get_cache(request: Request) -> CacheBackend:
+    return RedisCacheBackend(request.app.state.redis)
         
 async def throttle_user(
+    request: Request,
     current_user: User = Depends(get_current_active_user),
 ) -> None:
-    redis = Redis.from_url(settings.redis_url)
+    redis = request.app.state.redis
     key = f'rate_limit:user:{current_user.id}'
 
-    try:
-        requests_count = await redis.incr(key)
+    requests_count = await redis.incr(key)
 
-        if requests_count == 1:
-            await redis.expire(key, settings.rate_limit_window_seconds)
+    if requests_count == 1:
+        await redis.expire(key, settings.rate_limit_window_seconds)
 
-        if requests_count > settings.rate_limit_requests:
-            raise TooManyRequestsError()
-    finally:
-        await redis.aclose()
+    if requests_count > settings.rate_limit_requests:
+        raise TooManyRequestsError()
         
 async def get_pet_for_owner(
     pet_id: int,

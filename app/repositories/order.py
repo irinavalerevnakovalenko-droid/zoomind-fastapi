@@ -116,6 +116,7 @@ class SQLAlchemyOrderRepository:
                 selectinload(Order.items).selectinload(OrderItem.product),
             )
             .where(Order.user_id == user_id)
+            .order_by(Order.created_at.desc())
         )
 
         query = query.limit(pagination.page_size).offset(pagination.offset)
